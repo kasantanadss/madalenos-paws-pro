@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PetshopProvider } from "@/contexts/PetshopContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AnimatePresence } from "framer-motion";
 import Dashboard from "./pages/Dashboard";
 import Agenda from "./pages/Agenda";
 import Clientes from "./pages/Clientes";
@@ -18,25 +20,29 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <PetshopProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/agenda" element={<Agenda />} />
-            <Route path="/clientes" element={<Clientes />} />
-            <Route path="/pets" element={<Pets />} />
-            <Route path="/servicos" element={<Servicos />} />
-            <Route path="/produtos" element={<Produtos />} />
-            <Route path="/financeiro" element={<Financeiro />} />
-            <Route path="/relatorios" element={<Relatorios />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </PetshopProvider>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <PetshopProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AnimatePresence mode="wait">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/agenda" element={<Agenda />} />
+                <Route path="/clientes" element={<Clientes />} />
+                <Route path="/pets" element={<Pets />} />
+                <Route path="/servicos" element={<Servicos />} />
+                <Route path="/produtos" element={<Produtos />} />
+                <Route path="/financeiro" element={<Financeiro />} />
+                <Route path="/relatorios" element={<Relatorios />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AnimatePresence>
+          </BrowserRouter>
+        </PetshopProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
