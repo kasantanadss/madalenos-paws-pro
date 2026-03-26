@@ -55,7 +55,7 @@ export function PetshopProvider({ children }: { children: ReactNode }) {
   return (
     <PetshopContext.Provider value={{
       appointments, clients, pets, services, products, sales, financialEntries,
-      addAppointment, updateAppointmentStatus, addClient, addPet, addService, deleteService, addProduct, addFinancialEntry,
+      addAppointment, updateAppointmentStatus, addClient, addPet, addService, deleteService, addProduct, updateProduct, addFinancialEntry,
     }}>
       {children}
     </PetshopContext.Provider>
