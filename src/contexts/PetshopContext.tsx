@@ -25,6 +25,7 @@ interface PetshopState {
   addService: (s: Service) => void;
   deleteService: (id: string) => void;
   addProduct: (p: Product) => void;
+  updateProduct: (p: Product) => void;
   addFinancialEntry: (f: FinancialEntry) => void;
 }
 
@@ -48,12 +49,13 @@ export function PetshopProvider({ children }: { children: ReactNode }) {
   const addService = useCallback((s: Service) => setServices(prev => [...prev, s]), []);
   const deleteService = useCallback((id: string) => setServices(prev => prev.filter(s => s.id !== id)), []);
   const addProduct = useCallback((p: Product) => setProducts(prev => [...prev, p]), []);
+  const updateProduct = useCallback((p: Product) => setProducts(prev => prev.map(x => x.id === p.id ? p : x)), []);
   const addFinancialEntry = useCallback((f: FinancialEntry) => setFinancialEntries(prev => [...prev, f]), []);
 
   return (
     <PetshopContext.Provider value={{
       appointments, clients, pets, services, products, sales, financialEntries,
-      addAppointment, updateAppointmentStatus, addClient, addPet, addService, deleteService, addProduct, addFinancialEntry,
+      addAppointment, updateAppointmentStatus, addClient, addPet, addService, deleteService, addProduct, updateProduct, addFinancialEntry,
     }}>
       {children}
     </PetshopContext.Provider>

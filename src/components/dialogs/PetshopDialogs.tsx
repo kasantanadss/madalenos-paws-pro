@@ -248,6 +248,70 @@ export function NovoProdutoDialog({ open, onOpenChange }: Props) {
   );
 }
 
+export function EditProdutoDialog({ open, onOpenChange, product }: Props & { product: import('@/types/petshop').Product | null }) {
+  const { updateProduct } = usePetshop();
+  const [name, setName] = useState('');
+  const [category, setCategory] = useState('');
+  const [price, setPrice] = useState('');
+  const [stock, setStock] = useState('');
+  const [minStock, setMinStock] = useState('');
+
+  // Sync form when product changes
+  useState(() => {
+    if (product) {
+      setName(product.name);
+      setCategory(product.category);
+      setPrice(String(product.price));
+      setStock(String(product.stock));
+      setMinStock(String(product.minStock));
+    }
+  });
+
+  // Also update when open changes with a new product
+  const prevProductId = useState<string | null>(null);
+  if (product && product.id !== prevProductId[0]) {
+    prevProductId[1](product.id);
+    setName(product.name);
+    setCategory(product.category);
+    setPrice(String(product.price));
+    setStock(String(product.stock));
+    setMinStock(String(product.minStock));
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!product || !name || !price) { toast.error('Nome e preço são obrigatórios'); return; }
+    updateProduct({ ...product, name, category, price: parseFloat(price), stock: parseInt(stock) || 0, minStock: parseInt(minStock) || 5 });
+    toast.success('Produto atualizado com sucesso!');
+    onOpenChange(false);
+  };
+
+  if (!product) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-card border-border max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-display text-foreground">Editar Produto</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <FieldInput label="Nome do produto" value={name} onChange={setName} placeholder="Ex: Shampoo Premium" />
+          <FieldSelect label="Categoria" value={category} onChange={setCategory}
+            options={['Higiene', 'Alimentação', 'Acessórios', 'Saúde', 'Brinquedos'].map(c => ({ value: c, label: c }))} />
+          <div className="grid grid-cols-3 gap-3">
+            <FieldInput label="Preço (R$)" type="number" value={price} onChange={setPrice} placeholder="0.00" />
+            <FieldInput label="Estoque" type="number" value={stock} onChange={setStock} placeholder="0" />
+            <FieldInput label="Estoque mín." type="number" value={minStock} onChange={setMinStock} placeholder="5" />
+          </div>
+          <Button type="submit" className="w-full gold-gradient text-primary-foreground font-semibold hover:opacity-90">
+            Salvar Alterações
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function NovaTransacaoDialog({ open, onOpenChange }: Props) {
   const { addFinancialEntry } = usePetshop();
   const [type, setType] = useState<'entrada' | 'saida'>('entrada');
