@@ -49,6 +49,7 @@ export function PetshopProvider({ children }: { children: ReactNode }) {
   const addService = useCallback((s: Service) => setServices(prev => [...prev, s]), []);
   const deleteService = useCallback((id: string) => setServices(prev => prev.filter(s => s.id !== id)), []);
   const addProduct = useCallback((p: Product) => setProducts(prev => [...prev, p]), []);
+  const updateProduct = useCallback((p: Product) => setProducts(prev => prev.map(x => x.id === p.id ? p : x)), []);
   const addFinancialEntry = useCallback((f: FinancialEntry) => setFinancialEntries(prev => [...prev, f]), []);
 
   return (
