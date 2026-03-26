@@ -25,6 +25,7 @@ interface PetshopState {
   addService: (s: Service) => void;
   deleteService: (id: string) => void;
   addProduct: (p: Product) => void;
+  updateProduct: (p: Product) => void;
   addFinancialEntry: (f: FinancialEntry) => void;
 }
 
