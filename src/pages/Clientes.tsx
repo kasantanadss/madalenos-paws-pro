@@ -1,5 +1,6 @@
 import { AppLayout } from '@/components/layout/AppLayout';
 import { usePetshop } from '@/contexts/PetshopContext';
+import { normalizeSearch } from '@/components/dialogs/PetshopDialogs';
 import { motion } from 'framer-motion';
 import { Plus, Search, MessageCircle, PawPrint, Phone, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,9 +14,11 @@ export default function Clientes() {
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
 
-  const filtered = clients.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search)
-  );
+  const filtered = clients.filter(c => {
+    if (!search) return true;
+    const norm = normalizeSearch(search);
+    return normalizeSearch(c.name).includes(norm) || normalizeSearch(c.phone).includes(norm) || normalizeSearch(c.whatsapp).includes(norm);
+  });
   const clientPets = (clientId: string) => pets.filter(p => p.clientId === clientId);
 
   return (

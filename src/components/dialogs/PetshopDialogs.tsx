@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { usePetshop } from '@/contexts/PetshopContext';
@@ -6,13 +6,55 @@ import { toast } from 'sonner';
 
 interface Props { open: boolean; onOpenChange: (v: boolean) => void; }
 
+// ── Phone formatting helper ──
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 2) return digits.length > 0 ? `(${digits}` : '';
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
+function phoneToWhatsapp(phone: string): string {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length >= 10) return `55${digits}`;
+  return '';
+}
+
+// ── Normalize for fuzzy search ──
+export function normalizeSearch(text: string): string {
+  return text.replace(/[\s\-\(\)\.\+]/g, '').toLowerCase();
+}
+
+// ── Get available hourly slots (only future for today) ──
+function getAvailableTimeSlots(date: string, existingAppointments: import('@/types/petshop').Appointment[]): string[] {
+  const hours = Array.from({ length: 12 }, (_, i) => {
+    const h = i + 7; // 07:00 to 18:00
+    return `${String(h).padStart(2, '0')}:00`;
+  });
+
+  const today = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const currentHour = now.getHours();
+
+  return hours.filter(slot => {
+    // Block past hours if date is today
+    if (date === today) {
+      const slotHour = parseInt(slot.split(':')[0]);
+      if (slotHour <= currentHour) return false;
+    }
+    // Block already booked slots
+    const isBooked = existingAppointments.some(a => a.date === date && a.time === slot && a.status !== 'cancelado');
+    return !isBooked;
+  });
+}
+
 export function NovoAgendamentoDialog({ open, onOpenChange }: Props) {
-  const { clients, pets, services, addAppointment } = usePetshop();
+  const { clients, pets, services, appointments, addAppointment } = usePetshop();
   const [clientId, setClientId] = useState('');
   const [petId, setPetId] = useState('');
   const [serviceId, setServiceId] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [time, setTime] = useState('09:00');
+  const [time, setTime] = useState('');
   const [levaTraz, setLevaTraz] = useState(false);
 
   const clientPets = pets.filter(p => p.clientId === clientId);
@@ -20,10 +62,17 @@ export function NovoAgendamentoDialog({ open, onOpenChange }: Props) {
   const selectedPet = pets.find(p => p.id === petId);
   const selectedService = services.find(s => s.id === serviceId);
 
+  const today = new Date().toISOString().split('T')[0];
+  const availableSlots = useMemo(() => getAvailableTimeSlots(date, appointments), [date, appointments]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!clientId || !petId || !serviceId) {
       toast.error('Preencha todos os campos obrigatórios');
+      return;
+    }
+    if (!time) {
+      toast.error('Selecione um horário disponível');
       return;
     }
     addAppointment({
@@ -44,7 +93,7 @@ export function NovoAgendamentoDialog({ open, onOpenChange }: Props) {
     });
     toast.success('Agendamento criado com sucesso!');
     onOpenChange(false);
-    setClientId(''); setPetId(''); setServiceId(''); setLevaTraz(false);
+    setClientId(''); setPetId(''); setServiceId(''); setLevaTraz(false); setTime('');
   };
 
   return (
@@ -61,9 +110,21 @@ export function NovoAgendamentoDialog({ open, onOpenChange }: Props) {
           <FieldSelect label="Serviço" value={serviceId} onChange={setServiceId}
             options={services.filter(s => s.active).map(s => ({ value: s.id, label: `${s.name} - R$ ${s.price.toFixed(2)}` }))} placeholder="Selecione o serviço" />
           <div className="grid grid-cols-2 gap-3">
-            <FieldInput label="Data" type="date" value={date} onChange={setDate} />
-            <FieldInput label="Horário" type="time" value={time} onChange={setTime} />
+            <FieldInput label="Data" type="date" value={date} onChange={setDate} min={today} />
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Horário</label>
+              <select value={time} onChange={(e) => setTime(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all">
+                <option value="">Selecione</option>
+                {availableSlots.map(slot => (
+                  <option key={slot} value={slot}>{slot}</option>
+                ))}
+              </select>
+            </div>
           </div>
+          {availableSlots.length === 0 && date && (
+            <p className="text-xs text-destructive">Nenhum horário disponível para esta data.</p>
+          )}
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={levaTraz} onChange={(e) => setLevaTraz(e.target.checked)}
               className="w-4 h-4 rounded border-border bg-secondary accent-primary" />
@@ -90,12 +151,18 @@ export function NovoClienteDialog({ open, onOpenChange }: Props) {
   const [whatsapp, setWhatsapp] = useState('');
   const [address, setAddress] = useState('');
 
+  const handlePhoneChange = (value: string) => {
+    const formatted = formatPhone(value);
+    setPhone(formatted);
+    setWhatsapp(phoneToWhatsapp(value));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !phone) { toast.error('Nome e telefone são obrigatórios'); return; }
     addClient({
       id: `c${Date.now()}`,
-      name, phone, whatsapp: whatsapp || phone.replace(/\D/g, ''), address,
+      name, phone, whatsapp: whatsapp || phoneToWhatsapp(phone), address,
       pets: [], createdAt: new Date().toISOString().split('T')[0], totalVisits: 0,
     });
     toast.success('Cliente cadastrado com sucesso!');
@@ -111,8 +178,8 @@ export function NovoClienteDialog({ open, onOpenChange }: Props) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <FieldInput label="Nome completo" value={name} onChange={setName} placeholder="Ex: Maria Silva" />
-          <FieldInput label="Telefone" value={phone} onChange={setPhone} placeholder="(11) 99999-9999" />
-          <FieldInput label="WhatsApp" value={whatsapp} onChange={setWhatsapp} placeholder="5511999999999" />
+          <FieldInput label="Telefone" value={phone} onChange={handlePhoneChange} placeholder="(11) 99999-9999" />
+          <FieldInput label="WhatsApp" value={whatsapp} onChange={setWhatsapp} placeholder="Preenchido automaticamente" disabled />
           <FieldInput label="Endereço" value={address} onChange={setAddress} placeholder="Rua, número, bairro" />
           <Button type="submit" className="w-full gold-gradient text-primary-foreground font-semibold hover:opacity-90">
             Cadastrar Cliente
@@ -256,18 +323,6 @@ export function EditProdutoDialog({ open, onOpenChange, product }: Props & { pro
   const [stock, setStock] = useState('');
   const [minStock, setMinStock] = useState('');
 
-  // Sync form when product changes
-  useState(() => {
-    if (product) {
-      setName(product.name);
-      setCategory(product.category);
-      setPrice(String(product.price));
-      setStock(String(product.stock));
-      setMinStock(String(product.minStock));
-    }
-  });
-
-  // Also update when open changes with a new product
   const prevProductId = useState<string | null>(null);
   if (product && product.id !== prevProductId[0]) {
     prevProductId[1](product.id);
@@ -361,13 +416,13 @@ export function NovaTransacaoDialog({ open, onOpenChange }: Props) {
 
 // ── Shared field components ──
 
-function FieldInput({ label, value, onChange, placeholder, type = 'text', disabled }: {
-  label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string; disabled?: boolean;
+function FieldInput({ label, value, onChange, placeholder, type = 'text', disabled, min }: {
+  label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string; disabled?: boolean; min?: string;
 }) {
   return (
     <div>
       <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{label}</label>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} disabled={disabled}
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} disabled={disabled} min={min}
         className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 transition-all" />
     </div>
   );
