@@ -50,13 +50,15 @@ export default function Agenda() {
       ? weekDays.some(d => isSameDay(d, today))
       : isSameMonth(selectedDate, today);
 
-  const todayButtonLabel = isViewingToday
-    ? 'Hoje'
-    : view === 'day'
-      ? format(today, "d MMM", { locale: ptBR })
-      : view === 'week'
-        ? `Sem. ${format(today, "d MMM", { locale: ptBR })}`
-        : format(today, "MMM yyyy", { locale: ptBR });
+  const currentViewLabel = view === 'day'
+    ? (isSameDay(selectedDate, today) ? 'Hoje' : format(selectedDate, "d MMM", { locale: ptBR }))
+    : view === 'week'
+      ? (weekDays.some(d => isSameDay(d, today))
+        ? 'Esta Semana'
+        : `${format(weekDays[0], "d", { locale: ptBR })}–${format(weekDays[6], "d MMM", { locale: ptBR })}`)
+      : (isSameMonth(selectedDate, today)
+        ? 'Este Mês'
+        : format(selectedDate, "MMM yyyy", { locale: ptBR }));
 
   const headerSubtitle = view === 'day'
     ? format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })
@@ -79,7 +81,7 @@ export default function Agenda() {
           <button onClick={() => changeDay(-1)} className="w-8 h-8 rounded-lg bg-secondary hover:bg-muted flex items-center justify-center transition-colors">
             <ChevronLeft className="w-4 h-4 text-foreground" />
           </button>
-          <button onClick={() => setSelectedDate(new Date())} className={cn("px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors", isViewingToday ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-warning/10 text-warning hover:bg-warning/20")}>{todayButtonLabel}</button>
+          <button onClick={() => setSelectedDate(new Date())} className={cn("px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors", isViewingToday ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-warning/10 text-warning hover:bg-warning/20")}>{currentViewLabel}</button>
           <button onClick={() => changeDay(1)} className="w-8 h-8 rounded-lg bg-secondary hover:bg-muted flex items-center justify-center transition-colors">
             <ChevronRight className="w-4 h-4 text-foreground" />
           </button>
