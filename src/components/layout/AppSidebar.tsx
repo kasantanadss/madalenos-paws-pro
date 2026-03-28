@@ -15,8 +15,8 @@ import {
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 
 const navItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
