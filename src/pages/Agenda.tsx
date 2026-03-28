@@ -43,6 +43,21 @@ export default function Agenda() {
     .filter(a => a.date === dateStr)
     .sort((a, b) => a.time.localeCompare(b.time));
 
+  const today = new Date();
+  const isViewingToday = view === 'day'
+    ? isSameDay(selectedDate, today)
+    : view === 'week'
+      ? weekDays.some(d => isSameDay(d, today))
+      : isSameMonth(selectedDate, today);
+
+  const todayButtonLabel = isViewingToday
+    ? 'Hoje'
+    : view === 'day'
+      ? format(today, "d MMM", { locale: ptBR })
+      : view === 'week'
+        ? `Sem. ${format(today, "d MMM", { locale: ptBR })}`
+        : format(today, "MMM yyyy", { locale: ptBR });
+
   const headerSubtitle = view === 'day'
     ? format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })
     : view === 'week'
@@ -64,7 +79,7 @@ export default function Agenda() {
           <button onClick={() => changeDay(-1)} className="w-8 h-8 rounded-lg bg-secondary hover:bg-muted flex items-center justify-center transition-colors">
             <ChevronLeft className="w-4 h-4 text-foreground" />
           </button>
-          <button onClick={() => setSelectedDate(new Date())} className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors">Hoje</button>
+          <button onClick={() => setSelectedDate(new Date())} className={cn("px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors", isViewingToday ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-warning/10 text-warning hover:bg-warning/20")}>{todayButtonLabel}</button>
           <button onClick={() => changeDay(1)} className="w-8 h-8 rounded-lg bg-secondary hover:bg-muted flex items-center justify-center transition-colors">
             <ChevronRight className="w-4 h-4 text-foreground" />
           </button>
