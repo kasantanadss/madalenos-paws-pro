@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PetshopProvider } from "@/contexts/PetshopContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { SidebarProvider } from "@/contexts/SidebarContext";
 import { AnimatePresence } from "framer-motion";
 import Dashboard from "./pages/Dashboard";
 import Agenda from "./pages/Agenda";
