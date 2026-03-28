@@ -50,13 +50,15 @@ export default function Agenda() {
       ? weekDays.some(d => isSameDay(d, today))
       : isSameMonth(selectedDate, today);
 
-  const todayButtonLabel = isViewingToday
-    ? 'Hoje'
-    : view === 'day'
-      ? format(today, "d MMM", { locale: ptBR })
-      : view === 'week'
-        ? `Sem. ${format(today, "d MMM", { locale: ptBR })}`
-        : format(today, "MMM yyyy", { locale: ptBR });
+  const currentViewLabel = view === 'day'
+    ? (isSameDay(selectedDate, today) ? 'Hoje' : format(selectedDate, "d MMM", { locale: ptBR }))
+    : view === 'week'
+      ? (weekDays.some(d => isSameDay(d, today))
+        ? 'Esta Semana'
+        : `${format(weekDays[0], "d", { locale: ptBR })}–${format(weekDays[6], "d MMM", { locale: ptBR })}`)
+      : (isSameMonth(selectedDate, today)
+        ? 'Este Mês'
+        : format(selectedDate, "MMM yyyy", { locale: ptBR }));
 
   const headerSubtitle = view === 'day'
     ? format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })
