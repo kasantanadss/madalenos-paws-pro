@@ -30,7 +30,7 @@ const navItems = [
 ];
 
 export function AppSidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+  const { collapsed, toggle } = useSidebar();
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
 
