@@ -43,6 +43,7 @@ const App = () => (
             </AnimatePresence>
           </BrowserRouter>
         </PetshopProvider>
+        </SidebarProvider>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>

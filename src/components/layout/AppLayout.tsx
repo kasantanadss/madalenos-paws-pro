@@ -1,5 +1,7 @@
 import { AppSidebar } from './AppSidebar';
 import { MobileNav } from './MobileNav';
+import { useSidebar } from '@/contexts/SidebarContext';
+import { cn } from '@/lib/utils';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -9,6 +11,8 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children, title, subtitle, actions }: AppLayoutProps) {
+  const { collapsed } = useSidebar();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Desktop sidebar */}
@@ -20,7 +24,7 @@ export function AppLayout({ children, title, subtitle, actions }: AppLayoutProps
       <MobileNav />
 
       {/* Main content */}
-      <main className="lg:pl-[250px] pb-20 lg:pb-0">
+      <main className={cn('pb-20 lg:pb-0 transition-all duration-300', collapsed ? 'lg:pl-[72px]' : 'lg:pl-[250px]')}>
         <header className="sticky top-0 z-30 backdrop-blur-xl bg-background/80 border-b border-border">
           <div className="flex items-center justify-between px-6 py-4">
             <div>

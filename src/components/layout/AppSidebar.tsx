@@ -97,7 +97,7 @@ export function AppSidebar() {
           {!collapsed && <span>{theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}</span>}
         </button>
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={toggle}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary w-full transition-all"
         >
           <ChevronLeft className={cn('w-[18px] h-[18px] transition-transform', collapsed && 'rotate-180')} />
