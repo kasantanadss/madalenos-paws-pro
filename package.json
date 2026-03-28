@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:pages": "vite build --mode production",
+    "postbuild": "node -e \"const fs=require('node:fs'); if(fs.existsSync('dist/index.html')) fs.copyFileSync('dist/index.html','dist/404.html');\"",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
