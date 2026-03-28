@@ -81,7 +81,7 @@ export default function Agenda() {
           <button onClick={() => changeDay(-1)} className="w-8 h-8 rounded-lg bg-secondary hover:bg-muted flex items-center justify-center transition-colors">
             <ChevronLeft className="w-4 h-4 text-foreground" />
           </button>
-          <button onClick={() => setSelectedDate(new Date())} className={cn("px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors", isViewingToday ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-warning/10 text-warning hover:bg-warning/20")}>{todayButtonLabel}</button>
+          <button onClick={() => setSelectedDate(new Date())} className={cn("px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors", isViewingToday ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-warning/10 text-warning hover:bg-warning/20")}>{currentViewLabel}</button>
           <button onClick={() => changeDay(1)} className="w-8 h-8 rounded-lg bg-secondary hover:bg-muted flex items-center justify-center transition-colors">
             <ChevronRight className="w-4 h-4 text-foreground" />
           </button>
