@@ -43,6 +43,21 @@ export default function Agenda() {
     .filter(a => a.date === dateStr)
     .sort((a, b) => a.time.localeCompare(b.time));
 
+  const today = new Date();
+  const isViewingToday = view === 'day'
+    ? isSameDay(selectedDate, today)
+    : view === 'week'
+      ? weekDays.some(d => isSameDay(d, today))
+      : isSameMonth(selectedDate, today);
+
+  const todayButtonLabel = isViewingToday
+    ? 'Hoje'
+    : view === 'day'
+      ? format(today, "d MMM", { locale: ptBR })
+      : view === 'week'
+        ? `Sem. ${format(today, "d MMM", { locale: ptBR })}`
+        : format(today, "MMM yyyy", { locale: ptBR });
+
   const headerSubtitle = view === 'day'
     ? format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })
     : view === 'week'
